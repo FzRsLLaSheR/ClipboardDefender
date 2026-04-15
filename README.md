@@ -60,7 +60,7 @@ If a threat is detected, the extension blocks or neutralizes the content before 
 
 ## 🛠️ Tech Stack
 
-* JavaScript (Vanilla / Chrome Extension APIs)
+* JavaScript
 * Chrome Manifest V3
 * Content Scripts + Background Service Worker
 
@@ -91,7 +91,7 @@ Browser extensions can be powerful tools, but also require trust. Clipboard Defe
 Contributions are welcome!
 
 1. Fork the repo
-2. Create a new branch (`feature/your-feature`)
+2. Create a new branch
 3. Commit your changes
 4. Open a Pull Request
 
@@ -99,8 +99,7 @@ Contributions are welcome!
 
 ## 📄 License
 
-MIT License (or specify your license)
-
+ GNU General Public License (GPL)
 ---
 
 ## ⭐ Support
