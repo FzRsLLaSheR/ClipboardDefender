@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clipboard Defender</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">🛡️</div>
+      <div>
+        <div class="title">Clipboard Defender</div>
+        <div id="status-label" class="status">Loading…</div>
+      </div>
+      <button id="theme-btn" class="icon-btn">🌙</button>
+    </header>
+
+    <section class="toggle-section">
+      <label class="switch">
+        <input type="checkbox" id="toggle">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">Protection</span>
+    </section>
+
+    <section class="card" style="margin-bottom: 14px;">
+      <div class="card-title">Trusted Domains</div>
+      <div class="add-row">
+        <input id="whitelist-input" placeholder="example.com" />
+        <button id="add-btn">Add</button>
+      </div>
+      <div id="whitelist-list" class="list"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🔍 VirusTotal API Key</div>
+      <div class="vt-row">
+        <input id="vt-key-input" type="password" placeholder="Paste your free API key…" autocomplete="off" />
+        <button id="vt-save-btn">Save</button>
+      </div>
+      <div id="vt-status" class="vt-status"></div>
+      <div class="vt-hint">
+        Free key: <a href="https://www.virustotal.com/gui/join-us" target="_blank">virustotal.com</a>
+        · 4 req/min · 500/day
+      </div>
+    </section>
+
+    <footer>
+      <span>Clipboard Defender by Alex Necula</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
