@@ -182,7 +182,23 @@
 
     // reg add generico su chiavi di policy/run (persistence + hijacking)
     REG_ADD_POLICY:
-     /\breg\s+add\b[^\n]*(?:HKLM|HKCU)[^\n]*\\(?:Policies|Run|RunOnce|Software\\Microsoft\\Windows\\CurrentVersion)\b/i
+     /\breg\s+add\b[^\n]*(?:HKLM|HKCU)[^\n]*\\(?:Policies|Run|RunOnce|Software\\Microsoft\\Windows\\CurrentVersion)\b/i,
+	 
+	 // rundll32 UNC senza porta (path diretto)
+    RUNDLL32_UNC_NOPORT:
+     /\brundll32(?:\.exe)?\b[^\n]*\\\\[a-z0-9._-]+\\[^\s,]{8,},#\d+/i,
+
+    // msiexec con URL remoto (dropper via installer)
+    MSIEXEC_REMOTE:
+     /\bmsiexec\b[^\n]*\/[iI]\s+https?:\/\//i,
+	 
+	// FromBase64String + UTF8.GetString + Invoke-Expression (decode + exec fileless)
+    BASE64_DECODE_INVOKE:
+     /\[System\.Convert\]::FromBase64String\b[^\n]*\n?[^\n]*\[System\.Text\.Encoding\]::\w+\.GetString\b/i,
+
+    // [System.Text.Encoding]::UTF8.GetString usato per decodificare payload
+    UTF8_GETSTRING:
+     /\[System\.Text\.Encoding\]::\w+\.GetString\s*\(/i
 	    
   };
 
@@ -213,6 +229,9 @@
 	if (RE.PROCESS_START_PS.test(text))          score += 4;
 	if (RE.SUBSTRING_INDEX_OBFUSC.test(text))    score += 4;
 	if (RE.CHROME_POLICY_HIJACK.test(text))      score += 4;
+	if (RE.RUNDLL32_UNC_NOPORT.test(text))       score += 4;
+	if (RE.MSIEXEC_REMOTE.test(text))            score += 4;
+	if (RE.BASE64_DECODE_INVOKE.test(text))      score += 4;
 
     // Score 3 — alta confidenza
     if (RE.IEX_VAR.test(text))                   score += 3;
@@ -233,6 +252,7 @@
 	if (RE.SUBSTRING_BUILD.test(text))           score += 3;
 	if (RE.REMOVE_CHAIN.test(text))              score += 3;
 	if (RE.REG_ADD_POLICY.test(text))            score += 3;
+	if (RE.UTF8_GETSTRING.test(text))            score += 3;
 
     // Score 2 — media confidenza
     if (RE.IWR_IEX.test(text))                   score += 2;
