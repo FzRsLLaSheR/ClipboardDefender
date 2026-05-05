@@ -133,7 +133,17 @@
     'reg\\s+add\\b[^\\n]*(?:SOFTWARE\\\\Policies\\\\Google\\\\Chrome|CloudManagementEnrollmentToken|ExtensionInstallSources|ExtensionInstallAllowlist)',
 
     // reg add su chiavi HKLM/HKCU sensibili
-    '\\breg\\s+add\\b[^\\n]*(?:HKLM|HKCU)[^\\n]*\\\\(?:Policies|Run|RunOnce)'
+    '\\breg\\s+add\\b[^\\n]*(?:HKLM|HKCU)[^\\n]*\\\\(?:Policies|Run|RunOnce)',
+	
+	// rundll32 UNC senza porta
+    '\\brundll32(?:\\.exe)?\\b[^\\n]*\\\\\\\\[a-z0-9._-]+\\\\[^\\s,]{8,},#\\d+',
+
+    // msiexec URL remoto
+    '\\bmsiexec\\b[^\\n]*\\/[iI]\\s+https?:\\/\\/',
+	
+	// FromBase64String + UTF8.GetString chain
+    '\\[System\\.Convert\\]::FromBase64String\\b',
+    '\\[System\\.Text\\.Encoding\\]::\\w+\\.GetString\\s*\\('
 	
 
   ].join('|'), 'i');
