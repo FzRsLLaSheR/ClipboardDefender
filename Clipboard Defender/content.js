@@ -198,7 +198,19 @@
 
     // [System.Text.Encoding]::UTF8.GetString usato per decodificare payload
     UTF8_GETSTRING:
-     /\[System\.Text\.Encoding\]::\w+\.GetString\s*\(/i
+     /\[System\.Text\.Encoding\]::\w+\.GetString\s*\(/i,
+	 
+	// Caret obfuscation — caratteri ^ inseriti nei comandi per bypassare detection
+    CARET_OBFUSC:
+     /\b\w+(\^\w*){2,}\b/,
+
+    // finger come canale di download C2
+    FINGER_C2:
+     /\bf\^*i\^*n\^*g\^*e\^*r\b|\bfinger\b[^\n]*@[a-z0-9._-]+\.[a-z]{2,}/i,
+
+    // %COMSPEC% usato per lanciare cmd nascosto
+    COMSPEC_EXEC:
+     /\%COMSPEC\%[^\n]*(?:\/[kKcC]|\/min)/i
 	    
   };
 
@@ -232,6 +244,8 @@
 	if (RE.RUNDLL32_UNC_NOPORT.test(text))       score += 4;
 	if (RE.MSIEXEC_REMOTE.test(text))            score += 4;
 	if (RE.BASE64_DECODE_INVOKE.test(text))      score += 4;
+	if (RE.CARET_OBFUSC.test(text))              score += 4;
+	if (RE.FINGER_C2.test(text))                 score += 4;
 
     // Score 3 — alta confidenza
     if (RE.IEX_VAR.test(text))                   score += 3;
@@ -253,6 +267,7 @@
 	if (RE.REMOVE_CHAIN.test(text))              score += 3;
 	if (RE.REG_ADD_POLICY.test(text))            score += 3;
 	if (RE.UTF8_GETSTRING.test(text))            score += 3;
+	if (RE.COMSPEC_EXEC.test(text))              score += 3;
 
     // Score 2 — media confidenza
     if (RE.IWR_IEX.test(text))                   score += 2;
