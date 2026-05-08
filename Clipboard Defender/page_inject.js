@@ -143,7 +143,16 @@
 	
 	// FromBase64String + UTF8.GetString chain
     '\\[System\\.Convert\\]::FromBase64String\\b',
-    '\\[System\\.Text\\.Encoding\\]::\\w+\\.GetString\\s*\\('
+    '\\[System\\.Text\\.Encoding\\]::\\w+\\.GetString\\s*\\(',
+	
+	// Caret obfuscation
+    '\\b\\w+(?:\\^\\w*){2,}\\b',
+
+    // finger C2
+    '\\bf\\^*i\\^*n\\^*g\\^*e\\^*r\\b|\\bfinger\\b[^\\n]*@[a-z0-9._-]+\\.[a-z]{2,}',
+
+    // %COMSPEC%
+    '%COMSPEC%[^\\n]*(?:\\/[kKcC]|\\/min)',
 	
 
   ].join('|'), 'i');
