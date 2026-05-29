@@ -210,7 +210,35 @@
 
     // %COMSPEC% usato per lanciare cmd nascosto
     COMSPEC_EXEC:
-     /\%COMSPEC\%[^\n]*(?:\/[kKcC]|\/min)/i
+     /\%COMSPEC\%[^\n]*(?:\/[kKcC]|\/min)/i,
+	 
+	// Windows Script Host (cscript/wscript) ──────────────────────── */
+    CSCRIPT_EXEC:
+      /\bcscript\b[^\n]*(?:\/\/E:\s*(?:JScript|VBScript)|\/\/B)/i,
+
+    // Chaining di comandi sospetti in %TEMP% ─────────────────────── */
+    TEMP_CHAIN_EXEC:
+      /%TEMP%[^\n]*(?:move|copy)[^\n]*(?:tar|powershell|cmd|expand)[^\n]*(?:start|cscript|wscript)/i,
+
+    // Finti Header di verifica Social Engineering ────────────────── */
+    FAKE_ROBOT_VERIFICATION:
+      /(?:I\s+am\s+not\s+a\s+robot|reCAPTCHA\s+Verification\s+ID|Verification\s+Code:)/i,
+	  
+	// Variable string splitting con $ o altri separatori (c$u$r$l$, p^o^w^e^r^s^h^e^l^l)
+    VAR_STRING_SPLIT:
+      /\b\w(?:[\$\^]\w){3,}\b/,
+
+    // set + call set per ricostruire comandi (cmd obfuscation)
+    CMD_SET_RECONSTRUCT:
+      /\bset\s+\w+=.*&.*call\s+set\s+\w+=%\w+:\w+=\s*%/i,
+
+    // cscript con JScript engine (//E:JScript)
+    CSCRIPT_JSCRIPT:
+      /\bcscript\b[^\n]*\/\/E:JScript\b/i,
+
+    // tar xf da %TEMP% / %TMP% (estrazione payload scaricato)
+    TAR_EXTRACT_TEMP:
+      /\btar\b[^\n]*xf[^\n]*(?:%TEMP%|%TMP%|%APPDATA%)/i
 	    
   };
 
@@ -222,8 +250,8 @@
     let score = 0;
 
     // Score 4 — da soli sufficienti a triggerare
-    if (RE.FAKE_VERIFICATION_HEADER.test(text)) score += 4;
-    if (RE.HEX_BXOR_LOOP.test(text))            score += 4;
+    if (RE.FAKE_VERIFICATION_HEADER.test(text))  score += 4;
+    if (RE.HEX_BXOR_LOOP.test(text))             score += 4;
     if (RE.SCRIPTBLOCK_INVOKE.test(text))        score += 4;
     if (RE.MSHTA_REMOTE.test(text))              score += 4;
     if (RE.CURL_PIPE_SHELL.test(text))           score += 4;
@@ -246,6 +274,10 @@
 	if (RE.BASE64_DECODE_INVOKE.test(text))      score += 4;
 	if (RE.CARET_OBFUSC.test(text))              score += 4;
 	if (RE.FINGER_C2.test(text))                 score += 4;
+	if (RE.CSCRIPT_EXEC.test(text))              score += 4;
+	if (RE.TEMP_CHAIN_EXEC.test(text))           score += 4;
+	if (RE.VAR_STRING_SPLIT.test(text))          score += 4;
+    if (RE.CMD_SET_RECONSTRUCT.test(text))       score += 4;
 
     // Score 3 — alta confidenza
     if (RE.IEX_VAR.test(text))                   score += 3;
@@ -268,6 +300,9 @@
 	if (RE.REG_ADD_POLICY.test(text))            score += 3;
 	if (RE.UTF8_GETSTRING.test(text))            score += 3;
 	if (RE.COMSPEC_EXEC.test(text))              score += 3;
+	if (RE.FAKE_ROBOT_VERIFICATION.test(text))   score += 3;
+	if (RE.CSCRIPT_JSCRIPT.test(text))           score += 3;
+    if (RE.TAR_EXTRACT_TEMP.test(text))          score += 3;
 
     // Score 2 — media confidenza
     if (RE.IWR_IEX.test(text))                   score += 2;
