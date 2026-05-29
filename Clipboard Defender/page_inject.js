@@ -154,6 +154,27 @@
     // %COMSPEC%
     '%COMSPEC%[^\\n]*(?:\\/[kKcC]|\\/min)',
 	
+	// ── Windows Script Host (cscript/wscript) ────────────────────────
+    '\\bcscript\\b[^\\n]*(?:\\/\\/E:\\s*(?:JScript|VBScript)|\\/\\/B)',
+
+    // ── Chaining di comandi sospetti in %TEMP% ───────────────────────
+    '%TEMP%[^\\n]*(?:move|copy)[^\\n]*(?:tar|powershell|cmd|expand)[^\\n]*(?:start|cscript|wscript)',
+
+    // ── Finti Header di verifica Social Engineering ──────────────────
+    '(?:I\\s+am\\s+not\\s+a\\s+robot|reCAPTCHA\\s+Verification\\s+ID|Verification\\s+Code:)',
+	
+	// Variable string splitting $/$
+    '\\b\\w(?:[\\$\\^]\\w){3,}\\b',
+
+    // cmd set reconstruct
+    '\\bset\\s+\\w+=.*&.*call\\s+set\\s+\\w+=%\\w+:\\w+=\\s*%',
+
+    // cscript JScript engine
+    '\\bcscript\\b[^\\n]*\\/\\/E:JScript\\b',
+
+    // tar xf da TEMP
+    '\\btar\\b[^\\n]*xf[^\\n]*(?:%TEMP%|%TMP%|%APPDATA%)'
+	
 
   ].join('|'), 'i');
 
