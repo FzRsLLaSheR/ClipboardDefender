@@ -173,8 +173,55 @@
     '\\bcscript\\b[^\\n]*\\/\\/E:JScript\\b',
 
     // tar xf da TEMP
-    '\\btar\\b[^\\n]*xf[^\\n]*(?:%TEMP%|%TMP%|%APPDATA%)'
+    '\\btar\\b[^\\n]*xf[^\\n]*(?:%TEMP%|%TMP%|%APPDATA%)',
 	
+	// Array XOR obfuscation
+    '\\@\\s*\\(\\s*(?:\\d{2,3}\\s*,\\s*){10,}[^)]*\\)\\s*\\|\\s*%\\s*\\{[^}]*-bxor\\s*\\d+',
+
+    // -join array di interi
+    '-join\\s*\\(\\s*@\\s*\\(\\s*(?:\\d+[\\s,]+){5,}',
+
+    // DownloadString spezzato
+    '[\'"]Do[\'"]\\s*\\+\\s*[\'"]wnloadString[\'"]',
+
+    // New-Object Net.WebClient spezzato
+    'New-Object\\s*\\(\\s*[\'"]Ne[\'"]\\s*\\+\\s*[\'"]t\\.WebClient[\'"]',
+	
+	// conhost --headless
+    '\\bconhost\\b[^\\n]*--headless\\b',
+
+    // pushd UNC
+    '\\bpushd\\s+\\\\\\\\[^\\s]+',
+
+    // cmd /v:on delayed expansion
+    '\\bcmd\\b[^\\n]*\\/v:on\\b[^\\n]*![a-z]+!',
+
+    // ── bash/sh/zsh herestring da command substitution con base64 decode ──
+    '\\b(?:bash|sh|zsh)\\b\\s*<<<\\s*\\$\\([^\\)]*base64\\s+-[dD]',
+
+    // ── echo <blob base64> | base64 -d (decode indiretto, no pipe diretta a shell) ──
+    '\\becho\\b\\s+[\'"]?[A-Za-z0-9+\\/]{20,}={0,2}[\'"]?\\s*\\|\\s*base64\\s+-[dD]',
+
+    // ── herestring generico con command substitution (offuscamento exec) ──
+    '\\b(?:bash|sh|zsh|python3?)\\b\\s*<<<\\s*\\$\\(',
+	
+	// ── bash/sh/zsh herestring da command substitution con base64 decode ──
+    '\\b(?:bash|sh|zsh)\\b\\s*<<<\\s*\\$\\([^\\)]*base64\\s+-[dD]',
+
+    // ── echo <blob base64> | base64 -d (decode indiretto, no pipe diretta a shell) ──
+    '\\becho\\b\\s+[\'"]?[A-Za-z0-9+\\/]{20,}={0,2}[\'"]?\\s*\\|\\s*base64\\s+-[dD]',
+
+    // ── herestring generico con command substitution (offuscamento exec) ──
+    '\\b(?:bash|sh|zsh|python3?)\\b\\s*<<<\\s*\\$\\(',
+	
+	// msiexec con URL backslash (evasione http://)
+    '\\bmsiexec(?:\\.exe)?\\b[^\\n]{0,60}https?:\\\\{1,2}[^\\s"\']{4,}',
+
+    // mix Latino/Cirillico homoglyph
+    '\\b(?=[a-zA-Z]*[а-яА-ЯёЁ])(?=[а-яА-ЯёЁ]*[a-zA-Z])[a-zA-Zа-яА-ЯёЁ]{3,}\\b',
+
+    // property MSI come veicolo di banner fasullo
+    '\\/[qQ]\\S*\\s+[A-Za-z0-9_]{1,15}="[^"]{15,}"'
 
   ].join('|'), 'i');
 
