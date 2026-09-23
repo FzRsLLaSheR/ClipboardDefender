@@ -238,8 +238,74 @@
 
     // tar xf da %TEMP% / %TMP% (estrazione payload scaricato)
     TAR_EXTRACT_TEMP:
-      /\btar\b[^\n]*xf[^\n]*(?:%TEMP%|%TMP%|%APPDATA%)/i
-	    
+      /\btar\b[^\n]*xf[^\n]*(?:%TEMP%|%TMP%|%APPDATA%)/i,
+	  
+	// Array di interi + bxor per ricostruire stringhe (XOR array obfuscation)
+    ARRAY_BXOR_OBFUSC:
+     /\@\s*\(\s*(?:\d{2,3}\s*,\s*){10,}.*\)\s*\|\s*%\s*\{[^\}]*-bxor\s*\d+/i,
+
+    // -join su array di char/int (ricostruzione stringa offuscata)
+    JOIN_ARRAY_OBFUSC:
+     /-join\s*\(\s*@\s*\(\s*(?:\d+[\s,]+){5,}/i,
+
+    // DownloadString spezzato in concatenazione di stringhe
+    DOWNLOADSTRING_SPLIT:
+     /['"]Do['"]\s*\+\s*['"]wnloadString['"]/i,
+
+    // New-Object Net.WebClient con parti spezzate
+   WEBCLIENT_SPLIT:
+    /New-Object\s*\(\s*['"]Ne['"]\s*\+\s*['"]t\.WebClient['"]\s*\)/i,
+	
+	// conhost --headless come launcher stealth
+    CONHOST_HEADLESS:
+     /\bconhost\b[^\n]*--headless\b/i,
+
+    // pushd su UNC path (monta WebDAV senza net use)
+    PUSHD_UNC:
+     /\bpushd\s+\\\\[^\s]+/i,
+
+    // cmd /v:on con delayed expansion per ricostruire comandi (!var!)
+    CMD_DELAYED_EXPAND:
+     /\bcmd\b[^\n]*\/v:on\b[^\n]*![a-z]+!/i,
+
+    // bash/sh/zsh herestring (<<<) alimentata da command substitution con base64 -d
+    // es: bash <<< $(echo "<blob base64>" | base64 -d)
+    HERESTRING_BASE64_EXEC:
+     /\b(?:bash|sh|zsh)\b\s*<<<\s*\$\([^)]*base64\s+-[dD]/i,
+
+    // echo <blob base64> | base64 -d (decode indiretto, anche senza pipe finale a shell)
+    ECHO_BASE64_DECODE:
+     /\becho\b\s+['"]?[A-Za-z0-9+/]{20,}={0,2}['"]?\s*\|\s*base64\s+-[dD]/i,
+
+    // herestring generico con command substitution: tecnica di offuscamento per eseguire output dinamico
+    HERESTRING_CMD_SUBST:
+     /\b(?:bash|sh|zsh|python3?)\b\s*<<<\s*\$\(/i,
+	 
+	// bash/sh/zsh herestring (<<<) alimentata da command substitution con base64 -d
+    // es: bash <<< $(echo "<blob base64>" | base64 -d)
+    HERESTRING_BASE64_EXEC:
+     /\b(?:bash|sh|zsh)\b\s*<<<\s*\$\([^)]*base64\s+-[dD]/i,
+
+    // echo <blob base64> | base64 -d (decode indiretto, anche senza pipe finale a shell)
+    ECHO_BASE64_DECODE:
+     /\becho\b\s+['"]?[A-Za-z0-9+/]{20,}={0,2}['"]?\s*\|\s*base64\s+-[dD]/i,
+
+    // herestring generico con command substitution: tecnica di offuscamento per eseguire output dinamico
+    HERESTRING_CMD_SUBST:
+     /\b(?:bash|sh|zsh|python3?)\b\s*<<<\s*\$\(/i,
+	 
+	// msiexec con URL "backslash" al posto di http:// (evasione regex URL) ── */
+     MSIEXEC_BACKSLASH_URL:
+      /\bmsiexec(?:\.exe)?\b[^\n]{0,60}https?:\\{1,2}[^\s"']{4,}/i,
+
+    //Mix di caratteri Latini/Cirillici homoglyph nella stessa parola ──────── */
+    MIXED_SCRIPT_HOMOGLYPH:
+     /\b(?=[a-zA-Z]*[а-яА-ЯёЁ])(?=[а-яА-ЯёЁ]*[a-zA-Z])[a-zA-Zа-яА-ЯёЁ]{3,}\b/,
+
+    // Property MSI usata per veicolare un banner/testo fasullo (/Q KEY="...") ── */
+    MSI_HIDDEN_PROPERTY_BANNER:
+     /\/[qQ]\S*\s+[A-Za-z0-9_]{1,15}="[^"]{15,}"/
+
   };
 
   /* ==================================================================
@@ -278,6 +344,15 @@
 	if (RE.TEMP_CHAIN_EXEC.test(text))           score += 4;
 	if (RE.VAR_STRING_SPLIT.test(text))          score += 4;
     if (RE.CMD_SET_RECONSTRUCT.test(text))       score += 4;
+	if (RE.ARRAY_BXOR_OBFUSC.test(text))         score += 4;
+    if (RE.JOIN_ARRAY_OBFUSC.test(text))         score += 4;
+	if (RE.CONHOST_HEADLESS.test(text))          score += 4;
+    if (RE.PUSHD_UNC.test(text))                 score += 4;
+    if (RE.HERESTRING_BASE64_EXEC.test(text))    score += 4;
+    if (RE.ECHO_BASE64_DECODE.test(text))        score += 4;
+	if (RE.HERESTRING_BASE64_EXEC.test(text))    score += 4;
+	if (RE.ECHO_BASE64_DECODE.test(text))        score += 4;
+	if (RE.MSIEXEC_BACKSLASH_URL.test(text))     score += 4;
 
     // Score 3 — alta confidenza
     if (RE.IEX_VAR.test(text))                   score += 3;
@@ -303,6 +378,11 @@
 	if (RE.FAKE_ROBOT_VERIFICATION.test(text))   score += 3;
 	if (RE.CSCRIPT_JSCRIPT.test(text))           score += 3;
     if (RE.TAR_EXTRACT_TEMP.test(text))          score += 3;
+	if (RE.DOWNLOADSTRING_SPLIT.test(text))      score += 3;
+    if (RE.WEBCLIENT_SPLIT.test(text))           score += 3;
+	if (RE.CMD_DELAYED_EXPAND.test(text))        score += 3;
+	if (RE.MIXED_SCRIPT_HOMOGLYPH.test(text))    score += 3;
+	if (RE.MSI_HIDDEN_PROPERTY_BANNER.test(text)) score += 2;
 
     // Score 2 — media confidenza
     if (RE.IWR_IEX.test(text))                   score += 2;
@@ -310,6 +390,8 @@
     if (RE.CMD_ONELINER.test(text))              score += 2;
     if (RE.OSASCRIPT.test(text))                 score += 2;
     if (RE.SSH_PROXY.test(text))                 score += 2;
+    if (RE.HERESTRING_CMD_SUBST.test(text))      score += 2;
+	if (RE.HERESTRING_CMD_SUBST.test(text))      score += 2;
 
     // Score 1 — segnali deboli
     if (RE.KEYWORDS.test(text))                  score += 1;
